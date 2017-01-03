@@ -47,16 +47,20 @@ module.exports = {
     // const new_bob = crypto.getDiffieHellman('modp5');
     // const new_evelyn = crypto.getDiffieHellman('modp5');
     const new_alice = crypto.createDiffieHellman(128);
-    const new_bob = crypto.createDiffieHellman(128);
-    const new_evelyn = crypto.createDiffieHellman(128);
+    //const new_bob = crypto.createDiffieHellman(128);
+    //const new_evelyn = crypto.createDiffieHellman(128);
     // const new_alice = crypto.createECDH('secp128r1'); //secp521r1 // prime256v1
     // const new_bob = crypto.createECDH('secp128r1'); //secp521r1
     // const new_evelyn = crypto.createECDH('secp128r1'); //secp521r1
 
 
     new_alice.generateKeys();
-    new_bob.generateKeys();
-    new_evelyn.generateKeys();
+
+	const new_bob = crypto.createDiffieHellman(new_alice.getPrime(), new_alice.getGenerator());
+	new_bob.generateKeys();
+
+	const new_evelyn = crypto.createDiffieHellman(new_alice.getPrime(), new_alice.getGenerator());
+	new_evelyn.generateKeys();
 
     const new_alice_bob_secret = new_alice.computeSecret(new_bob.getPublicKey(), null, 'hex');
     const new_bob_alice_secret = new_bob.computeSecret(new_alice.getPublicKey(), null, 'hex');
