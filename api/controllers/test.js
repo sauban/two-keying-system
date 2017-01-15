@@ -59,23 +59,25 @@ const crypto = require('crypto');
 // // User.find().then(users => {console.log(users);}).catch(err => {console.error(err);})
 //
 //
-const cipher = crypto.createCipher('aes-256-ctr', 'donriddo');
-var encrypted = cipher.update(JSON.stringify({a:1,b:2}), 'utf8', 'hex');
-encrypted += cipher.final('hex');
-// console.log(encrypted);
-var encrypted = "66f4b9a3c78192e434b1fe86b8";
-// console.log('donriddo' );
-var encrypted = "4a22427f65a75593ecce3723ff5f0058d416e0cc6a6e5069ddc33b4dddd54931255b4a0ca4c95f161ba16b2cd19183a70699d0ce89cfb547adc5fb17260ff568dc5444276edafd0d6aaad77e047c85eb130400bb832fddd5bc5493e550e30ba8849b3ee975258a356837b316714b17c7ba53d78e9cf21e41c836fcb7a58bc1afcf9d4c15447cc220267142339cbd8e15d9d5bf2bce638a7589595cfc3afe1e351685d9cae8cefec2b88c378837de2beb0d4c5cac2d5378ad6a80429296b9e7cea4114e04e76c229357e9a869fd97a2648d8f65cef6cdcbe5c471d64b4b3cce3be2fe4976febe61159acd60c92074b125740decad5889c1fef2dfc2dea692ac5ab8ae5fb8f89852a65270430461ee85ea3b6512209b099f1420954c99188ce5767e4c812a81bfff977587caffcdd4a77c2a0171b27d7553881f527adaa07c279065ecfaf9f8c9a7fb8c2c7c5db36610c3acdad1a2ee501faaa32fe8fb0c2b";
+
+
 
 const userKey = crypto.createDiffieHellman('c75df0940355772603db92f8ec9d1923', 'hex', '02', 'hex');
 userKey.generateKeys();
-userKey.setPrivateKey('6758d461785b3cd6c1b9491041411d5d', 'hex');
-userKey.setPublicKey('8ec50901c68d56ae65947e7171f9f01d', 'hex');
+userKey.setPrivateKey('6f69b243c259a1aa3843063b05be12ba', 'hex');
+userKey.setPublicKey('b40021be0706735127fc5b1e525aa5ec', 'hex');
 var sharedSecret = userKey.computeSecret('3a124799b49d56cea6299d92f5e51978', 'hex', 'hex');
+console.log(sharedSecret);
 
-var bobCypher = crypto.createDecipher('aes-256-ctr', '490d4e0569638e20de03abfa9b6f1d3e');
+const cipher = crypto.createCipher('aes-256-ctr', sharedSecret);
+var encrypted = cipher.update(JSON.stringify({last_name:"Lawal",first_name:"Sauban", role: 1}), 'utf8', 'hex');
+encrypted += cipher.final('hex');
+// console.log(encrypted);
+
+var bobCypher = crypto.createDecipher('aes-256-ctr', sharedSecret);
 
 // console.log(bobCypher);
+var encrypted = "a4de45376cfca42188496365c4e80c96621d8cbbc6feb8270038c77ee07facebf5344c868f115c6f3170246176a5ec910397e5f8ca7f7e528acf81589df5a2940f015e2c649e94c3975408441fad86fa6d2f783c3e617a6420ec87925cbef9ffbe4af41761c275dee43a5ac70a522e4b9c70cfeeb8188c036c95b87a98f185bea67229a68c0ac46118b7ca548f837e35869974d6e1ca3c2f827478cae624ebaf4866c9ec465293c6a01b839837895b349402816733547f11b24c0a47224a5812a4f76410036924c9b4b42296ab1bc960714eac6e96a795815b3b1e916418f507d46352e12dc237ddf0a179fa4384528a35bc89924f31eacd95860c066cbe12735d689da3c86cdece0a7cac4b801e0ac7c334a778b45515144a3dbd973d4a6e19d2da41d761f97fc8c076088ea69985ee0b11f6b1b6f5f3df79edb46cb6f13ce227bce99795106bf1d94de0a0b3effd55f942442ed85463d58e79db8d801a89017ce170a7647a02";
 
 var plainText = bobCypher.update(encrypted, 'hex', 'utf8');
 plainText += bobCypher.final('utf8');

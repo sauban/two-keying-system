@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var promise = require('bluebird');
 module.exports = {
     create(req, res) {
 		var data = req.body;
@@ -14,13 +15,12 @@ module.exports = {
             data.apiKey = setup[0].publicKey;
             data.prime = setup[0].prime;
             data.generator = setup[0].generator;
+            console.log(data);
             return User.create(data);
         })
         .then(createdUser => {
 			if (createdUser){
-                const cipher = crypto.createCipher('aes-256-ctr', data.password);
-                var encrypted = cipher.update(JSON.stringify(createdUser), 'utf8', 'hex');
-                encrypted += cipher.final('hex');
+                var encrypted = EncryptionService.encrypt(createdUser, data.password);
                 var body = {
                     message: "User created successfully and keys generated",
                     body: encrypted
@@ -31,25 +31,35 @@ module.exports = {
 			return ValidationService.jsonResolveError(err, User, res);
 		});
 	},
+
     read(req, res) {
         User.findOne(req.params.id)
-        .then(user => {
-            return [user, Setup.find()];
+        .then(user => {;
+            return [Setup.find(), user];
         })
-        .spread((user, setups) => {
-            const setupKey = crypto.createDiffieHellman(setups[0].prime, 'hex', setups[0].generator, 'hex');
-            setupKey.generateKeys();
-            setupKey.setPrivateKey(setups[0].privateKey, 'hex');
-            setupKey.setPublicKey(setups[0].publicKey, 'hex');
-            var sharedSecret = setupKey.computeSecret(user.publicKey, 'hex', 'hex');
-            console.log(sharedSecret);
-            const cipher = crypto.createCipher('aes-256-ctr', sharedSecret);
-            var encrypted = cipher.update(JSON.stringify(user), 'utf8', 'hex');
-            encrypted += cipher.final('hex');
-            return ResponseService.json(200, res, 'User retrieved successfully', encrypted);
+        .spread((setup, user) => {
+            return ResponseService.json(200, res, 'User retrieved successfully', EncryptionService.encryptPublic(setup, user, user));
         })
         .catch(err => {
             return ValidationService.jsonResolveError(err, User, res);
+        });
+    },
+
+    update(req, res) {
+        var encryptedData = req.body.data;
+        User.findOne(req.params.id)
+        .then(user => {
+            return [Setup.find(), user];
         })
+        .spread((setup, user) => {
+            var decrypted = JSON.parse(EncryptionService.decrypt(setup, encryptedData, user));
+            return [setup, User.update({id: req.params.id}, decrypted)];
+        })
+        .spread((setup, updatedUser) => {
+            return ResponseService.json(200, res, 'User updated successfully', EncryptionService.encryptPublic(setup, updatedUser[0], updatedUser[0]));
+        })
+        .catch(err => {
+            return ValidationService.jsonResolveError(err, User, res);
+        });
     }
 };

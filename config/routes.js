@@ -35,7 +35,8 @@ module.exports.routes = {
   'GET /generate-keys': 'Auth.generateKeys',
   'POST /register': 'Auth.create',
   'POST /user': 'UserController.create',
-  'GET /user/:id': 'UserController.read'
+  'GET /user/:id': 'UserController.read',
+  'PUT /user/:id': 'UserController.update'
 
   /***************************************************************************
   *                                                                          *
