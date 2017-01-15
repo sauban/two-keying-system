@@ -15,7 +15,6 @@ module.exports = {
             data.apiKey = setup[0].publicKey;
             data.prime = setup[0].prime;
             data.generator = setup[0].generator;
-            console.log(data);
             return User.create(data);
         })
         .then(createdUser => {
@@ -46,16 +45,19 @@ module.exports = {
     },
 
     update(req, res) {
+        if (!req.body.data) return ResponseService.json(400, res, "Body cannot be empty");
         var encryptedData = req.body.data;
         User.findOne(req.params.id)
         .then(user => {
             return [Setup.find(), user];
         })
         .spread((setup, user) => {
-            var decrypted = JSON.parse(EncryptionService.decrypt(setup, encryptedData, user));
+            var decrypted = EncryptionService.decrypt(setup, encryptedData, user);
+            if (decrypted instanceof Error) return [decrypted];
             return [setup, User.update({id: req.params.id}, decrypted)];
         })
         .spread((setup, updatedUser) => {
+            if (setup instanceof Error) return ResponseService.json(400, res, "Bad Input, please make sure you provided a correctly encrypted data.");
             return ResponseService.json(200, res, 'User updated successfully', EncryptionService.encryptPublic(setup, updatedUser[0], updatedUser[0]));
         })
         .catch(err => {

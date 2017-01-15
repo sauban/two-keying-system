@@ -23,8 +23,12 @@ module.exports = {
         setupKey.setPublicKey(setup[0].publicKey, 'hex');
         var sharedSecret = setupKey.computeSecret(user.publicKey, 'hex', 'hex');
         const decipher = crypto.createDecipher('aes-256-ctr', sharedSecret);
-        var decrypted = decipher.update(data, 'hex', 'utf8');
+        try {
+            var decrypted = decipher.update(data, 'hex', 'utf8');
+        } catch (e) {
+                return e;
+        }
         decrypted += decipher.final('utf8');
-        return decrypted;
+        return JSON.parse(decrypted);
     }
 };
