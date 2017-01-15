@@ -141,6 +141,20 @@ describe('UserController', () => {
             });
         });
 
+        it('should return 400, Bad Input', (done) => {
+            chai.request(sails.hooks.http.app)
+            .put('/user/2')
+            .send({data: "gibberish data :gywt82yrhilnf.k"})
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                expect(res).to.have.property('body');
+                expect(res.body).to.have.property('response');
+                expect(res.body.response).to.have.property('message');
+                expect(res.body.response.message).to.equal('Bad Input, please make sure you provided a correctly encrypted data.');
+                done();
+            });
+        });
+
         it('should return 200, User updated successfully', (done) => {
             chai.request(sails.hooks.http.app)
             .put('/user/2')

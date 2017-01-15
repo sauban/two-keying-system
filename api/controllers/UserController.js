@@ -57,12 +57,12 @@ module.exports = {
         .spread((setup, user) => {
             if (!user) return [null, false];
             var decrypted = EncryptionService.decrypt(setup, encryptedData, user);
-            if (decrypted instanceof Error) return [decrypted];
+            if (decrypted instanceof Error) return [null, decrypted];
             return [setup, User.update({id: req.params.id}, decrypted)];
         })
         .spread((setup, updatedUser) => {
             if (!updatedUser) return ResponseService.json(404, res, "User not found");
-            if (setup instanceof Error) return ResponseService.json(400, res, "Bad Input, please make sure you provided a correctly encrypted data.");
+            if (updatedUser instanceof Error) return ResponseService.json(400, res, "Bad Input, please make sure you provided a correctly encrypted data.");
             return ResponseService.json(200, res, 'User updated successfully', EncryptionService.encryptPublic(setup, updatedUser[0], updatedUser[0]));
         })
         .catch(err => {
